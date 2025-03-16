@@ -299,4 +299,101 @@ public class SpacemanController : MonoBehaviour
        
     }
 }
+//////////////////
 
+9TH
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class Prog9 : MonoBehaviour
+{
+    public float moveSpeed=10f;
+    public float rotationSpeed=5f;
+    float mouseX=0;
+
+
+    CharacterController cc;
+    Animator animator;
+    AudioSource audioSource;
+
+    int score=0;
+
+    public float GameTime=10f;
+
+    public string sceneName;
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+      cc=GetComponent<CharacterController>();
+      animator=GetComponent<Animator>();
+      audioSource=GetComponent<AudioSource>();
+      StartCoroutine("GameTimeCalculation");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        float h=Input.GetAxis("Horizontal");
+        float v=Input.GetAxis("Vertical");
+
+        if( v<0)
+        {
+            return;
+        }
+
+       Vector3 movement=transform.TransformDirection(0,0,v*moveSpeed); //Calculate movement Velocity
+       cc.SimpleMove(movement); //Apply movement velocity to character
+
+       mouseX +=Input.GetAxis("Mouse X")*rotationSpeed; //reading mouseX input
+       transform.eulerAngles=new Vector3(0,mouseX,0); //apply mouseX to Y axis
+
+       //Trigger animation
+       if(movement.magnitude>0)
+       {
+        animator.SetBool("IsRunning", true);
+       }
+       else
+       {
+         animator.SetBool("IsRunning", false);
+       }
+       if(GameTime==0)
+       {
+        SceneManager.LoadScene(sceneName);
+       }
+
+    }
+    
+        private void OnTriggerEnter(Collider other)
+     {
+        if(other.tag == "Collectibles")
+        {
+            audioSource.Play();
+            other.gameObject.SetActive(false);
+            score++;
+        }
+
+    }
+
+    IEnumerator GameTimeCalculation()
+    {
+        while (GameTime >0)
+        {
+            yield return new WaitForSeconds(1f);
+            GameTime = GameTime - 1f;
+            if(GameTime==0)
+            {
+                break;
+            }
+        }
+    }
+
+    private void OnGUI()
+    {
+        GUILayout.Label($"Score: {score}");
+        GUILayout.Label($"Time Left: {GameTime}");
+        
+    }
+}
